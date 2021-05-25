@@ -2,333 +2,462 @@
 <html lang="ja">
 
 <head>
+    <style>
+        body {
+            font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+            color: rgb(0, 0, 0);
+            line-height: 25px;
+            font-size: 25px;
+        }
+    </style>
     <meta charset="utf-8">
     <title>Brillouin Zone</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.101.1/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
-    <script>
-        // Ref orbitcontros.jsについて https://www.i-ryo.com/entry/2020/05/02/215245
-        // ページの読み込みを待つ
-        window.addEventListener('load', init);
-        var num = 8;
-        function init() {
-            // サイズを指定
-            const width = 1200;
-            const height = 720;
-            // レンダラーを作成
-            const canvasElement = document.querySelector('#myCanvas')
-            const renderer = new THREE.WebGLRenderer({
-                canvas: canvasElement,
-            });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(width, height);
-            renderer.setClearColor(0xf8f8f8);
+    <div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.101.1/examples/js/controls/OrbitControls.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+        <script>
+            // Ref orbitcontros.jsについて https://www.i-ryo.com/entry/2020/05/02/215245
+            // ページの読み込みを待つ
+            window.addEventListener('load', init);
+            var num = 8;
+            function init() {
+                // サイズを指定
+                const width = 1200;
+                const height = 720;
+                // レンダラーを作成
+                const canvasElement = document.querySelector('#myCanvas')
+                const renderer = new THREE.WebGLRenderer({
+                    canvas: canvasElement,
+                });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(width, height);
+                renderer.setClearColor(0xf8f8f8);
 
-            // シーンを作成
-            const scene = new THREE.Scene();
+                // シーンを作成
+                const scene = new THREE.Scene();
 
-            // カメラを作成
-            const camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
-            camera.position.set(0, 0, +1500);
+                // カメラを作成
+                const camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+                camera.position.set(-800, 800, -1500);
 
-            const controls = new THREE.OrbitControls(camera);
-
-
-            //======================================================
+                const controls = new THREE.OrbitControls(camera);
 
 
-            //Box1------------------------------------------------
-            var box1 = new THREE.BoxGeometry(300, 300, 300);
-            var boxmaterial1 = new THREE.MeshBasicMaterial({ color: 0x000000 });
-            boxmaterial1.wireframe = true;
-            var mesh_frame1 = new THREE.Mesh(box1, boxmaterial1);
-            //BoxHelperを生成
-            const frameBox1 = new THREE.BoxHelper(mesh_frame1, 0xff0000);
-            //シーンに追加
-            frameBox1.position.set(300, 300, 300);
-            scene.add(frameBox1);
-            //--------------------------------------------------
+                //======================================================
 
 
-            var vertices = box1.vertices.length;
+                //Box1------------------------------------------------
+                var box1 = new THREE.BoxGeometry(300, 300, 300);
+                var boxmaterial1 = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                boxmaterial1.wireframe = true;
+                var mesh_frame1 = new THREE.Mesh(box1, boxmaterial1);
+                //BoxHelperを生成
+                const frameBox1 = new THREE.BoxHelper(mesh_frame1, 0xff0000);
+                //シーンに追加
+                frameBox1.position.set(300, 300, 300);
+                scene.add(frameBox1);
+                //--------------------------------------------------
 
-            // 頂点をダンプ
-            for (var i = 0; i < box1.vertices.length; i++) {
-                var vertex = box1.vertices[i];
-                console.log(i + ':' + vertex.x + ' ' + vertex.y + ' ' + vertex.z);
+
+                var vertices = box1.vertices.length;
+
+                // 頂点をダンプ
+                for (var i = 0; i < box1.vertices.length; i++) {
+                    var vertex = box1.vertices[i];
+                    console.log(i + ':' + vertex.x + ' ' + vertex.y + ' ' + vertex.z);
+                }
+
+                var positions = new Float32Array(num * 3);
+                var sizes = new Float32Array(num);
+
+
+                //頂点インデックス配列
+                var indices = new Uint16Array(num);
+
+                for (var i = 0; i < num; i++) {
+                    var i3 = i * 3;
+                    //頂点インデックス配列の指定
+                    indices[i] = i;
+
+                    //頂点座標配列の指定
+                    positions[i3] = box1.vertices[i].x;
+                    positions[i3 + 1] = box1.vertices[i].y;
+                    positions[i3 + 2] = box1.vertices[i].z;
+
+                    sizes[i] = 30;
+                }
+
+                //initialization==========================================================================
+                var mesh = [];
+                for (var j = 0; j < num; j++) {
+                    mesh[j] = [];
+                }
+
+                var mesh_bcc = [];
+                for (var j = 0; j < num; j++) {
+                    mesh_bcc[j] = [];
+                }
+
+                var mesh_fcc = [];
+                for (var j = 0; j < num; j++) {
+                    mesh_fcc[j] = [];
+                }
+
+                var mesh_fcc_1 = [];
+                for (var j = 0; j < num; j++) {
+                    mesh_fcc_1[j] = [];
+                }
+
+                var mesh_fcc_2 = [];
+                for (var j = 0; j < num; j++) {
+                    mesh_fcc_2[j] = [];
+                }
+
+                var mesh_center = [];
+                for (var j = 0; j < num + 4; j++) {
+                    mesh_center[j] = [];
+                }
+
+                var bcc = new THREE.Group();
+                var fcc = new THREE.Group();
+
+
+                //Unit cell ========================================================================
+
+                var r0 = 32;
+                var geometry0 = new THREE.SphereGeometry(r0, 16 * 2, 16 * 2);
+                var material0 = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+                /////
+
+                for (var i = 0; i < num; i++) {
+                    mesh[i] = new THREE.Mesh(geometry0, material0);
+                    var i3 = i * 3;
+                    mesh[i].position.set(positions[i3], positions[i3 + 1], positions[i3 + 2]);
+                    //bcc.add(mesh[i]);
+                    fcc.add(mesh[i]);
+                }
+                //==========================================================================
+
+                //BCC=======================================================================
+                var positions_bcc = new Float32Array(num * 3);
+                var num_bcc = 1;
+                for (var i = 0; i < num_bcc; i++) {
+                    var i3 = i * 3;
+                    positions_bcc[i3] = (positions[i] + positions[i + 9]) / 2;
+                    positions_bcc[i3 + 1] = (positions[i + 1] + positions[i + 10]) / 2;
+                    positions_bcc[i3 + 2] = (positions[i + 2] + positions[i + 11]) / 2;
+                    //console.log(i + ':' + positions_bcc[i3] + ' ' + positions_bcc[i3+1] + ' ' + positions_bcc[i3+2]);
+                }
+
+                for (var i = 0; i < num_bcc; i++) {
+                    mesh_bcc[i] = new THREE.Mesh(geometry0, material0);
+                    var i3 = i * 3;
+                    mesh_bcc[i].position.set(positions_bcc[i3] - 150, positions_bcc[i3 + 1], positions_bcc[i3 + 2]);
+                    bcc.add(mesh_bcc[i]);
+                }
+
+                //scene.add(bcc);
+                //==========================================================================
+
+                //FCC=======================================================================
+                var positions_fcc = new Float32Array(num * 3);
+                var num_fcc = 6;
+                //(0123,4567)
+                for (var i = 0; i < 2; i++) {
+                    var i3 = i * 3;
+                    positions_fcc[i3] = (positions[i * 15] + positions[i * 9 + 9]) / 2;
+                    positions_fcc[i3 + 1] = (positions[i * 15 + 1] + positions[i * 9 + 10]) / 2;
+                    positions_fcc[i3 + 2] = (positions[i * 15 + 2] + positions[i * 9 + 11]) / 2;
+                }
+                //(0145,2367)
+                for (var i = 0; i < 2; i++) {
+                    var i3 = i * 3;
+                    positions_fcc[i3 + 6] = (positions[i * 6] + positions[i * 6 + 12]) / 2;
+                    positions_fcc[i3 + 6 + 1] = (positions[i * 6 + 1] + positions[i * 6 + 12 + 1]) / 2;
+                    positions_fcc[i3 + 6 + 2] = (positions[i * 6 + 2] + positions[i * 6 + 12 + 2]) / 2;
+                }
+
+                //(0275,1364)
+                for (var i = 0; i < 2; i++) {
+                    var i3 = i * 3;
+                    positions_fcc[i3 + 12] = (positions[i * 3] + positions[-i * 3 + 21]) / 2;
+                    positions_fcc[i3 + 12 + 1] = (positions[i * 3 + 1] + positions[-i * 3 + 21 + 1]) / 2;
+                    positions_fcc[i3 + 12 + 2] = (positions[i * 3 + 2] + positions[-i * 3 + 21 + 2]) / 2;
+                }
+
+                for (var i = 0; i < num_fcc; i++) {
+                    mesh_fcc[i] = new THREE.Mesh(geometry0, material0);
+                    var i3 = i * 3;
+                    mesh_fcc[i].position.set(positions_fcc[i3], positions_fcc[i3 + 1], positions_fcc[i3 + 2]);
+                    console.log(i + ':' + mesh_fcc[i].position.x + ' ' + mesh_fcc[i].position.y + ' ' + mesh_fcc[i].position.z);
+                    fcc.add(mesh_fcc[i]);
+                }
+
+                scene.add(fcc);
+                //==========================================================================
+
+                //FCC_takusan=======================================================================
+                //[300,300,300]
+                var material_fcc = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+                for (var i = 0; i < num_fcc; i++) {
+                    mesh_fcc_1[i] = new THREE.Mesh(geometry0, material0);
+                    var i3 = i * 3;
+                    mesh_fcc_1[i].position.set(positions_fcc[i3] + 300, positions_fcc[i3 + 1] + 300, positions_fcc[i3 + 2] + 300);
+                    console.log('[300,300,300]' + i + ':' + mesh_fcc_1[i].position.x + ' ' + mesh_fcc_1[i].position.y + ' ' + mesh_fcc_1[i].position.z);
+                    fcc.add(mesh_fcc_1[i]);
+                }
+
+                var box2 = new THREE.CubeGeometry(300, 300, 300);
+                var boxmaterial2 = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                boxmaterial2.wireframe = true;
+                var mesh_frame2 = new THREE.Mesh(box2, boxmaterial2);
+                //BoxHelperを生成
+                //シーンに追加
+                mesh_frame2.position.set(300, 300, 300);
+                //scene.add(mesh_frame2);
+                //=====================================================================================
+                //[0,300,300]
+                var material_fcc = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+                for (var i = 0; i < num_fcc; i++) {
+                    mesh_fcc_2[i] = new THREE.Mesh(geometry0, material0);
+                    var i3 = i * 3;
+                    mesh_fcc_2[i].position.set(positions_fcc[i3], positions_fcc[i3 + 1] + 300, positions_fcc[i3 + 2] + 300);
+                    console.log('[0,300,300]' + i + ':' + mesh_fcc_2[i].position.x + ' ' + mesh_fcc_2[i].position.y + ' ' + mesh_fcc_2[i].position.z);
+                    fcc.add(mesh_fcc_2[i]);
+                }
+
+                var box3 = new THREE.CubeGeometry(300, 300, 300);
+                var boxmaterial3 = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                boxmaterial3.wireframe = true;
+                var mesh_frame3 = new THREE.Mesh(box3, boxmaterial3);
+                //BoxHelperを生成
+                //シーンに追加
+                mesh_frame3.position.set(0, 300, 300);
+                //scene.add(mesh_frame3);
+                //--------------------------------------------------
+
+                var positions_center = new Float32Array(12 * 3);
+                for (var i = 0; i < 1; i++) {
+                    var i3 = i * 3;
+                    positions_center[i3] = (positions[i] + mesh_fcc_1[5].position.x) / 2;
+                    positions_center[i3 + 1] = (positions[i + 1] + mesh_fcc_1[5].position.y) / 2;
+                    positions_center[i3 + 2] = (positions[i + 2] + mesh_fcc_1[5].position.z) / 2;
+                    console.log('[05]' + i + ':' + positions_center[i3] + ' ' + positions_center[i3 + 1] + ' ' + positions_center[i3 + 2]);
+
+                }
+                // 座標軸を表示
+                var axes = new THREE.AxisHelper(200);
+                //scene.add(axes);
+
+                //アトリビュート変数登録
+                //var geometry = new THREE.BufferGeometry();
+                const points1 = [];
+                //RGB,XYZaxis
+                points1.push(new THREE.Vector3(300, 150, 0));
+                points1.push(new THREE.Vector3(150, 300, 0));
+                points1.push(new THREE.Vector3(150, 300, 300));
+                points1.push(new THREE.Vector3(300, 150, 300));
+                points1.push(new THREE.Vector3(300, 150, 0));
+
+                //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
+                const geometry1 = new THREE.BufferGeometry().setFromPoints(points1);
+                const line_material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+                var line1 = new THREE.Line(geometry1, line_material);
+                //scene.add(line1);
+
+                //======================================================
+                const points2 = [];
+                //RGB,XYZaxis
+                points2.push(new THREE.Vector3(0, 150, 300));
+                points2.push(new THREE.Vector3(300, 150, 300));
+                points2.push(new THREE.Vector3(300, 300, 150));
+                points2.push(new THREE.Vector3(0, 300, 150));
+                points2.push(new THREE.Vector3(0, 150, 300));
+
+                //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
+                const geometry2 = new THREE.BufferGeometry().setFromPoints(points2);
+                const line_material1 = new THREE.LineBasicMaterial({ color: 0x0000ff });
+                var line2 = new THREE.Line(geometry2, line_material1);
+                //scene.add(line2);
+
+                //======================================================
+                const points3 = [];
+                //RGB,XYZaxis
+                points3.push(new THREE.Vector3(150, 150, 300));
+                points3.push(new THREE.Vector3(300, 150, 150));
+                points3.push(new THREE.Vector3(300, 300, 150));
+                points3.push(new THREE.Vector3(150, 300, 300));
+                points3.push(new THREE.Vector3(150, 150, 300));
+
+                //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
+                const geometry3 = new THREE.BufferGeometry().setFromPoints(points3);
+                const line_material3 = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+                var line3 = new THREE.Line(geometry3, line_material3);
+                //scene.add(line3);
+
+
+                //======================================================
+                const points4 = [];
+                //RGB,XYZaxis
+                points4.push(new THREE.Vector3(150, 150, 300));
+                points4.push(new THREE.Vector3(0, 150, 150));
+                points4.push(new THREE.Vector3(0, 300, 150));
+                points4.push(new THREE.Vector3(150, 300, 300));
+                points4.push(new THREE.Vector3(150, 150, 300));
+
+                //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
+                const geometry4 = new THREE.BufferGeometry().setFromPoints(points4);
+                const line_material4 = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+                var line4 = new THREE.Line(geometry4, line_material4);
+                //scene.add(line4);
+
+                //======================================================
+                const points5 = [];
+                //RGB,XYZaxis
+                points5.push(new THREE.Vector3(150, 300, 300));
+                points5.push(new THREE.Vector3(0, 150, 300));
+                points5.push(new THREE.Vector3(0, 150, 0));
+                points5.push(new THREE.Vector3(150, 300, 0));
+                points5.push(new THREE.Vector3(150, 300, 300));
+
+                //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
+                const geometry5 = new THREE.BufferGeometry().setFromPoints(points5);
+                const line_material5 = new THREE.LineBasicMaterial({ color: 0x0000ff });
+                var line5 = new THREE.Line(geometry5, line_material5);
+                //scene.add(line5);
+
+                //======================================================
+                const points6 = [];
+                //RGB,XYZaxis
+                points6.push(new THREE.Vector3(150, 300, 150));
+                points6.push(new THREE.Vector3(225, 225, 225));
+                points6.push(new THREE.Vector3(150, 150, 300));
+                points6.push(new THREE.Vector3(75, 225, 225));
+                points6.push(new THREE.Vector3(150, 300, 150));
+
+                //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
+                const geometry6 = new THREE.BufferGeometry().setFromPoints(points6);
+                const line_material6 = new THREE.LineBasicMaterial({ color: 0xff0000 });
+                var line6 = new THREE.Line(geometry6, line_material6);
+                //scene.add(line6);
+
+
+                /*
+                //頂点インデックス配列の登録
+                geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    
+                //アトリビュート変数登録
+                geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    
+    
+                var material2 = new THREE.PointsMaterial({
+                    size: 100,
+                    color: 0xff0000,
+                });
+                var mesh2 = new THREE.Points(geometry, material2);
+                scene.add(mesh2);
+                */
+                tick();
+                function tick() {
+                    // cubeをx軸に少しずつ回す
+                    //mesh_frame.rotation.x += 0.01;
+                    // cubeをy軸に少しずつ回す
+                    //mesh_frame.rotation.y += 0.01;
+                    //カメラコントローラー更新
+                    controls.update();
+                    requestAnimationFrame(tick);
+                    renderer.render(scene, camera); // レンダリング
+
+                    function butotnClick() {
+                        if (checkbox1.checked) {
+                            scene.add(mesh_frame2)
+                        } else {
+                            scene.remove(mesh_frame2)
+                        }
+
+                        if (checkbox2.checked) {
+                            scene.add(mesh_frame3)
+                        } else {
+                            scene.remove(mesh_frame3)
+                        }
+                        //===============================================
+                        if (checkbox3.checked) {
+                            scene.add(line1)
+                        } else {
+                            scene.remove(line1)
+                        }
+
+                        if (checkbox4.checked) {
+                            scene.add(line2)
+                        } else {
+                            scene.remove(line2)
+                        }
+
+                        if (checkbox5.checked) {
+                            scene.add(line3)
+                        } else {
+                            scene.remove(line3)
+                        }
+
+                        if (checkbox6.checked) {
+                            scene.add(line4)
+                        } else {
+                            scene.remove(line4)
+                        }
+
+                        if (checkbox7.checked) {
+                            scene.add(line5)
+                        } else {
+                            scene.remove(line5)
+                        }
+
+                        if (checkbox8.checked) {
+                            scene.add(line6)
+                        } else {
+                            scene.remove(line6)
+                        }
+                    }
+
+                    let checkbox1 = document.getElementById('check1');
+                    let checkbox2 = document.getElementById('check2');
+                    let checkbox3 = document.getElementById('check3');
+                    let checkbox4 = document.getElementById('check4');
+                    let checkbox5 = document.getElementById('check5');
+                    let checkbox6 = document.getElementById('check6');
+                    let checkbox7 = document.getElementById('check7');
+                    let checkbox8 = document.getElementById('check8');
+                    let checkbox9 = document.getElementById('check9');
+                    let checkbox10 = document.getElementById('check10');
+
+                    let checkButton = document.getElementById('checkButton');
+                    checkButton.addEventListener('click', butotnClick);
+                }
             }
-
-            var positions = new Float32Array(num * 3);
-            var sizes = new Float32Array(num);
-
-
-            //頂点インデックス配列
-            var indices = new Uint16Array(num);
-
-            for (var i = 0; i < num; i++) {
-                var i3 = i * 3;
-                //頂点インデックス配列の指定
-                indices[i] = i;
-
-                //頂点座標配列の指定
-                positions[i3] = box1.vertices[i].x;
-                positions[i3 + 1] = box1.vertices[i].y;
-                positions[i3 + 2] = box1.vertices[i].z;
-
-                sizes[i] = 30;
-            }
-
-            //initialization==========================================================================
-            var mesh = [];
-            for (var j = 0; j < num; j++) {
-                mesh[j] = [];
-            }
-
-            var mesh_bcc = [];
-            for (var j = 0; j < num; j++) {
-                mesh_bcc[j] = [];
-            }
-
-            var mesh_fcc = [];
-            for (var j = 0; j < num; j++) {
-                mesh_fcc[j] = [];
-            }
-
-            var mesh_fcc_1 = [];
-            for (var j = 0; j < num; j++) {
-                mesh_fcc_1[j] = [];
-            }
-
-            var mesh_fcc_2 = [];
-            for (var j = 0; j < num; j++) {
-                mesh_fcc_2[j] = [];
-            }
-
-            var mesh_center = [];
-            for (var j = 0; j < num + 4; j++) {
-                mesh_center[j] = [];
-            }
-
-            var bcc = new THREE.Group();
-            var fcc = new THREE.Group();
-
-
-            //Unit cell ========================================================================
-
-            var r0 = 32;
-            var geometry0 = new THREE.SphereGeometry(r0, 16 * 2, 16 * 2);
-            var material0 = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-            /////
-
-            for (var i = 0; i < num; i++) {
-                mesh[i] = new THREE.Mesh(geometry0, material0);
-                var i3 = i * 3;
-                mesh[i].position.set(positions[i3], positions[i3 + 1], positions[i3 + 2]);
-                //bcc.add(mesh[i]);
-                fcc.add(mesh[i]);
-            }
-            //==========================================================================
-
-            //BCC=======================================================================
-            var positions_bcc = new Float32Array(num * 3);
-            var num_bcc = 1;
-            for (var i = 0; i < num_bcc; i++) {
-                var i3 = i * 3;
-                positions_bcc[i3] = (positions[i] + positions[i + 9]) / 2;
-                positions_bcc[i3 + 1] = (positions[i + 1] + positions[i + 10]) / 2;
-                positions_bcc[i3 + 2] = (positions[i + 2] + positions[i + 11]) / 2;
-                //console.log(i + ':' + positions_bcc[i3] + ' ' + positions_bcc[i3+1] + ' ' + positions_bcc[i3+2]);
-            }
-
-            for (var i = 0; i < num_bcc; i++) {
-                mesh_bcc[i] = new THREE.Mesh(geometry0, material0);
-                var i3 = i * 3;
-                mesh_bcc[i].position.set(positions_bcc[i3] - 150, positions_bcc[i3 + 1], positions_bcc[i3 + 2]);
-                bcc.add(mesh_bcc[i]);
-            }
-
-            //scene.add(bcc);
-            //==========================================================================
-
-            //FCC=======================================================================
-            var positions_fcc = new Float32Array(num * 3);
-            var num_fcc = 6;
-            //(0123,4567)
-            for (var i = 0; i < 2; i++) {
-                var i3 = i * 3;
-                positions_fcc[i3] = (positions[i * 15] + positions[i * 9 + 9]) / 2;
-                positions_fcc[i3 + 1] = (positions[i * 15 + 1] + positions[i * 9 + 10]) / 2;
-                positions_fcc[i3 + 2] = (positions[i * 15 + 2] + positions[i * 9 + 11]) / 2;
-            }
-            //(0145,2367)
-            for (var i = 0; i < 2; i++) {
-                var i3 = i * 3;
-                positions_fcc[i3 + 6] = (positions[i * 6] + positions[i * 6 + 12]) / 2;
-                positions_fcc[i3 + 6 + 1] = (positions[i * 6 + 1] + positions[i * 6 + 12 + 1]) / 2;
-                positions_fcc[i3 + 6 + 2] = (positions[i * 6 + 2] + positions[i * 6 + 12 + 2]) / 2;
-            }
-
-            //(0275,1364)
-            for (var i = 0; i < 2; i++) {
-                var i3 = i * 3;
-                positions_fcc[i3 + 12] = (positions[i * 3] + positions[-i * 3 + 21]) / 2;
-                positions_fcc[i3 + 12 + 1] = (positions[i * 3 + 1] + positions[-i * 3 + 21 + 1]) / 2;
-                positions_fcc[i3 + 12 + 2] = (positions[i * 3 + 2] + positions[-i * 3 + 21 + 2]) / 2;
-            }
-
-            for (var i = 0; i < num_fcc; i++) {
-                mesh_fcc[i] = new THREE.Mesh(geometry0, material0);
-                var i3 = i * 3;
-                mesh_fcc[i].position.set(positions_fcc[i3], positions_fcc[i3 + 1], positions_fcc[i3 + 2]);
-                console.log(i + ':' + mesh_fcc[i].position.x + ' ' + mesh_fcc[i].position.y + ' ' + mesh_fcc[i].position.z);
-                fcc.add(mesh_fcc[i]);
-            }
-
-            scene.add(fcc);
-            //==========================================================================
-
-            //FCC_takusan=======================================================================
-            //[300,300,300]
-            var material_fcc = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-            for (var i = 0; i < num_fcc; i++) {
-                mesh_fcc_1[i] = new THREE.Mesh(geometry0, material0);
-                var i3 = i * 3;
-                mesh_fcc_1[i].position.set(positions_fcc[i3] + 300, positions_fcc[i3 + 1] + 300, positions_fcc[i3 + 2] + 300);
-                console.log('[300,300,300]' + i + ':' + mesh_fcc_1[i].position.x + ' ' + mesh_fcc_1[i].position.y + ' ' + mesh_fcc_1[i].position.z);
-                fcc.add(mesh_fcc_1[i]);
-            }
-
-            var box2 = new THREE.CubeGeometry(300, 300, 300);
-            var boxmaterial2 = new THREE.MeshBasicMaterial({ color: 0x000000 });
-            boxmaterial2.wireframe = true;
-            var mesh_frame2 = new THREE.Mesh(box2, boxmaterial2);
-            //BoxHelperを生成
-            //シーンに追加
-            mesh_frame2.position.set(300, 300, 300);
-            scene.add(mesh_frame2);
-            //=====================================================================================
-            //[0,300,300]
-            var material_fcc = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-            for (var i = 0; i < num_fcc; i++) {
-                mesh_fcc_2[i] = new THREE.Mesh(geometry0, material0);
-                var i3 = i * 3;
-                mesh_fcc_2[i].position.set(positions_fcc[i3], positions_fcc[i3 + 1] + 300, positions_fcc[i3 + 2] + 300);
-                console.log('[0,300,300]' + i + ':' + mesh_fcc_2[i].position.x + ' ' + mesh_fcc_2[i].position.y + ' ' + mesh_fcc_2[i].position.z);
-                fcc.add(mesh_fcc_2[i]);
-            }
-
-            var box3 = new THREE.CubeGeometry(300, 300, 300);
-            var boxmaterial3 = new THREE.MeshBasicMaterial({ color: 0x000000 });
-            boxmaterial3.wireframe = true;
-            var mesh_frame3 = new THREE.Mesh(box3, boxmaterial3);
-            //BoxHelperを生成
-            //シーンに追加
-            mesh_frame3.position.set(0, 300, 300);
-            scene.add(mesh_frame3);
-            //--------------------------------------------------
-
-            var positions_center = new Float32Array(12 * 3);
-            for (var i = 0; i < 1; i++) {
-                var i3 = i * 3;
-                positions_center[i3] = (positions[i] + mesh_fcc_1[5].position.x) / 2;
-                positions_center[i3 + 1] = (positions[i + 1] + mesh_fcc_1[5].position.y) / 2;
-                positions_center[i3 + 2] = (positions[i + 2] + mesh_fcc_1[5].position.z) / 2;
-                console.log('[05]' + i + ':' + positions_center[i3] + ' ' + positions_center[i3 + 1] + ' ' + positions_center[i3 + 2]);
-
-            }
-            // 座標軸を表示
-            var axes = new THREE.AxisHelper(200);
-            scene.add(axes);
-            //アトリビュート変数登録
-            //var geometry = new THREE.BufferGeometry();
-            const points1 = [];
-            //RGB,XYZaxis
-            points1.push(new THREE.Vector3(300, 150, 0));
-            points1.push(new THREE.Vector3(150, 300, 0));
-            points1.push(new THREE.Vector3(150, 300, 300));
-            points1.push(new THREE.Vector3(300, 150, 300));
-            points1.push(new THREE.Vector3(300, 150, 0));
-
-            //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
-            const geometry1 = new THREE.BufferGeometry().setFromPoints(points1);
-            const line_material = new THREE.LineBasicMaterial({ color: 0x0000ff });
-            var line1 = new THREE.Line(geometry1, line_material);
-            scene.add(line1);
-
-            //======================================================
-            const points2 = [];
-            //RGB,XYZaxis
-            points2.push(new THREE.Vector3(0, 150, 300));
-            points2.push(new THREE.Vector3(300, 150, 300));
-            points2.push(new THREE.Vector3(300, 300, 150));
-            points2.push(new THREE.Vector3(0, 300, 150));
-            points2.push(new THREE.Vector3(0, 150, 300));
-
-            //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
-            const geometry2 = new THREE.BufferGeometry().setFromPoints(points2);
-            const line_material1 = new THREE.LineBasicMaterial({ color: 0x0000ff });
-            var line2 = new THREE.Line(geometry2, line_material1);
-            scene.add(line2);
-
-            //======================================================
-            const points3 = [];
-            //RGB,XYZaxis
-            points3.push(new THREE.Vector3(150, 150, 300));
-            points3.push(new THREE.Vector3(300, 150, 150));
-            points3.push(new THREE.Vector3(300, 300, 150));
-            points3.push(new THREE.Vector3(150, 300, 300));
-            points3.push(new THREE.Vector3(150, 150, 300));
-
-            //geometry.addAttribute('positions', new THREE.BufferAttribute(positions_center, 3));
-            const geometry3 = new THREE.BufferGeometry().setFromPoints(points3);
-            const line_material3 = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-            var line3 = new THREE.Line(geometry3, line_material3);
-            scene.add(line3);
-
-
-            /*
-            //頂点インデックス配列の登録
-            geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-
-            //アトリビュート変数登録
-            geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-
-            var material2 = new THREE.PointsMaterial({
-                size: 100,
-                color: 0xff0000,
-            });
-            var mesh2 = new THREE.Points(geometry, material2);
-            scene.add(mesh2);
-            */
-            tick();
-            initGUI();
-            
-            function initGUI() {
-            gui = new GUI({ width: 300 });
-            gui.add(effectController, 'showMyGeometry').onChange(function (value) {
-                myGeometry.visible = value;
-            });
-        }
-            // 毎フレーム時に実行されるループイベント
-            function tick() {
-                // cubeをx軸に少しずつ回す
-                //mesh_frame.rotation.x += 0.01;
-                // cubeをy軸に少しずつ回す
-                //mesh_frame.rotation.y += 0.01;
-                //カメラコントローラー更新
-                controls.update();
-                requestAnimationFrame(tick);
-                renderer.render(scene, camera); // レンダリング
-            }
-        }
-    </script>
+        </script>
 </head>
 
 <body>
-    <p class="title">単位格子とその逆格子およびBrillouin Zoneを立体的に見れます。</p>
+    <p class="title">体心立方格子のBrillouin Zoneを立体的に見れます。動けば良し。(固まったらリロードしてください）</p>
+    <p>左ドラッグ：回転、右ドラッグ：移動、ホイール：拡大縮小</p>
+    <div>
+        <label><input type="checkbox" id="check1">UnitCell1</label>
+        <label><input type="checkbox" id="check2">UnitCell2</label>
+    </div>
+    &emsp;
+    <div>
+        <label><input type="checkbox" id="check3">bisection1</label>
+        <label><input type="checkbox" id="check4">bisection2</label>
+        <label><input type="checkbox" id="check5">bisection3</label>
+        <label><input type="checkbox" id="check6">bisection4</label>
+        <label><input type="checkbox" id="check7">bisection5</label>
+        <label><input type="checkbox" id="check8">bisection6</label>
+    </div>
+    <div>
+        <input type="button" value="Brillouin!" id="checkButton" style="width:100px;height:50px"font-size: 20px;>
+    </div>
+    </script>
     <!-- このタグに3Dオブジェクトを埋め込んでいく -->
     <canvas id="myCanvas"></canvas>
 </body>
