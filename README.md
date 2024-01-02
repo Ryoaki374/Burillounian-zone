@@ -6,5 +6,7 @@ For a body-centered cubic (BCC) unit cell, the Brillouin zone is a polyhedron in
 ### 2. How to play?
 In this simulator, for three face-centered cubic lattices, it displays the perpendicular bisecting planes in reciprocal space. Through the visualization of six perpendicular bisecting planes, you can confirm the actual creation of a rhombus, which is one face of the dodecahedron.
 
-please access to below link:
+please access to below link:<br>
 https://ryoaki374.github.io/Burillounian-zone/
+
+This simulator is rendered using three.js and HTML5 canvas.
